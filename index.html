@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PromptCraft AI</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --purple:#534AB7;--purple-light:#EEEDFE;--purple-mid:#AFA9EC;--purple-dark:#3C3489;
+    --teal:#1D9E75;--teal-light:#E1F5EE;
+    --bg:#F8F7FF;--surface:#fff;--border:#E0DFF5;--border2:#C8C6E8;
+    --text:#1a1928;--text2:#6B68A0;--text3:#A09DC8;--mono:'Courier New',monospace;
+    --red:#E24B4A;--red-light:#FCEBEB
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
+  .page{max-width:680px;margin:0 auto;padding:2rem 1rem 4rem}
+  /* NAV */
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.5rem}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-icon{width:44px;height:44px;border-radius:12px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .brand-name{font-size:20px;font-weight:600;color:var(--text)}
+  .brand-sub{font-size:13px;color:var(--text2);margin-top:1px}
+  .nav-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:4px}
+  .nav-tab{padding:6px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);transition:all 0.15s;border:none;background:transparent}
+  .nav-tab:hover{color:var(--text)}
+  .nav-tab.active{background:var(--purple);color:#fff}
+  /* SCREENS */
+  .screen{display:none}
+  .screen.active{display:block}
+  /* SHARED */
+  .tip{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--purple-light);border-radius:10px;font-size:13px;color:var(--purple-dark);line-height:1.5;margin-bottom:1.5rem;border:0.5px solid var(--purple-mid)}
+  .section-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+  .cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
+  .cat{padding:6px 14px;border-radius:99px;border:1px solid var(--border2);font-size:13px;cursor:pointer;color:var(--text2);background:var(--surface);transition:all 0.15s}
+  .cat:hover{border-color:var(--purple-mid);color:var(--purple)}
+  .cat.sel{background:var(--purple-light);color:var(--purple-dark);border-color:var(--purple-mid);font-weight:600}
+  .examples{display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem}
+  .ex-btn{text-align:left;padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;cursor:pointer;line-height:1.5;transition:all 0.15s}
+  .ex-btn:hover{border-color:var(--border2);color:var(--text);background:#fafafa}
+  .input-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:1.25rem;margin-bottom:14px}
+  textarea{width:100%;border:none;outline:none;resize:none;font-size:15px;color:var(--text);background:transparent;font-family:inherit;line-height:1.6;min-height:90px}
+  textarea::placeholder{color:var(--text3)}
+  .char-hint{font-size:12px;color:var(--text3);text-align:right;margin-top:6px}
+  .actions{display:flex;gap:8px;align-items:center;margin-bottom:1.5rem}
+  .btn-main{padding:10px 22px;border-radius:10px;border:none;background:var(--purple);color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.15s}
+  .btn-main:hover{background:var(--purple-dark)}
+  .btn-main:disabled{opacity:0.5;cursor:not-allowed}
+  .btn-sec{padding:10px 18px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:14px;cursor:pointer;transition:all 0.15s}
+  .btn-sec:hover{background:var(--bg);color:var(--text)}
+  .divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+  .questions-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem;display:none}
+  .q-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+  .q-icon{width:36px;height:36px;border-radius:10px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .q-title{font-size:15px;font-weight:600;color:var(--text)}
+  .q-subtitle{font-size:12px;color:var(--text2);margin-top:2px}
+  .question-item{margin-bottom:16px}
+  .q-text{font-size:14px;color:var(--text);margin-bottom:8px;font-weight:500}
+  .q-options{display:flex;flex-wrap:wrap;gap:6px}
+  .q-opt{padding:6px 14px;border-radius:99px;border:1px solid var(--border2);font-size:13px;cursor:pointer;color:var(--text2);background:var(--surface);transition:all 0.15s}
+  .q-opt:hover{border-color:var(--teal);color:var(--teal)}
+  .q-opt.picked{background:var(--teal-light);color:#085041;border-color:#9FE1CB;font-weight:600}
+  .q-custom{width:100%;margin-top:8px;font-size:13px;padding:8px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit}
+  .q-custom:focus{border-color:var(--teal)}
+  .result-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:1.25rem;display:none}
+  .r-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .r-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text)}
+  .r-title span{font-size:18px}
+  .r-actions{display:flex;gap:6px}
+  .r-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border2);font-size:13px;cursor:pointer;background:var(--bg);color:var(--text2);transition:all 0.15s}
+  .r-btn:hover{color:var(--text)}
+  .prompt-out{font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:var(--mono);background:var(--bg);border-radius:10px;padding:1rem;max-height:500px;overflow-y:auto;border:1px solid var(--border)}
+  .dot-loader{display:inline-flex;gap:4px;align-items:center}
+  .dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:bounce 1.2s infinite}
+  .dot:nth-child(2){animation-delay:.2s}
+  .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+  /* HISTORY */
+  .hist-empty{text-align:center;padding:3rem 1rem;color:var(--text3)}
+  .hist-empty .icon{font-size:40px;margin-bottom:12px}
+  .hist-empty p{font-size:14px;line-height:1.6}
+  .hist-filters{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+  .hf-btn{padding:5px 14px;border-radius:99px;border:1px solid var(--border2);font-size:12px;cursor:pointer;color:var(--text2);background:var(--surface);transition:all 0.15s}
+  .hf-btn:hover{border-color:var(--purple-mid);color:var(--purple)}
+  .hf-btn.sel{background:var(--purple-light);color:var(--purple-dark);border-color:var(--purple-mid);font-weight:600}
+  .hist-clear{margin-left:auto;padding:5px 14px;border-radius:99px;border:1px solid var(--border2);font-size:12px;cursor:pointer;color:var(--red);background:var(--red-light);border-color:var(--red)}
+  .hist-count{font-size:13px;color:var(--text2);margin-bottom:12px}
+  .hist-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;transition:border-color 0.15s}
+  .hist-card:hover{border-color:var(--purple-mid)}
+  .hist-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+  .hist-cat-badge{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--purple-light);color:var(--purple-dark);font-size:11px;font-weight:600;white-space:nowrap}
+  .hist-date{font-size:11px;color:var(--text3);white-space:nowrap;margin-top:2px}
+  .hist-input-preview{font-size:13px;color:var(--text);font-weight:500;margin-bottom:6px;line-height:1.4}
+  .hist-prompt-preview{font-size:12px;color:var(--text2);line-height:1.5;font-family:var(--mono);background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border);white-space:pre-wrap;max-height:80px;overflow:hidden;position:relative}
+  .hist-prompt-preview::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(transparent,var(--bg))}
+  .hist-card-actions{display:flex;gap:6px;margin-top:10px}
+  .hc-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;background:var(--bg);color:var(--text2);transition:all 0.15s}
+  .hc-btn:hover{color:var(--text);border-color:var(--border)}
+  .hc-btn.del{color:var(--red);border-color:var(--red-light)}
+  .hc-btn.del:hover{background:var(--red-light)}
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:1rem}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:16px;width:100%;max-width:600px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+  .modal-title{font-size:15px;font-weight:600;color:var(--text)}
+  .modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+  .modal-close:hover{color:var(--text)}
+  .modal-body{padding:1.25rem;overflow-y:auto;flex:1}
+  .modal-meta{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .modal-prompt{font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:var(--mono);background:var(--bg);border-radius:10px;padding:1rem;border:1px solid var(--border)}
+  .modal-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:8px}
+  @media(max-width:500px){.actions{flex-direction:column}.btn-main,.btn-sec{width:100%;justify-content:center}.nav-tab{padding:6px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- NAV -->
+<div class="nav">
+  <div class="brand">
+    <div class="brand-icon">✦</div>
+    <div>
+      <div class="brand-name">PromptCraft AI</div>
+      <div class="brand-sub">Qisqa fikrdan → mukammal promptga</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showScreen('main')">✦ Yarat</button>
+    <button class="nav-tab" onclick="showScreen('history')" id="histTab">🕓 Tarix</button>
+  </div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div class="screen active" id="screen-main">
+
+<div class="tip">
+  💡 Nima yaratmoqchi ekanligingizni qisqacha yozing. AI o'zi fikrlab, aniqlashtiruvchi savollar beradi va professional prompt yozib beradi.
+</div>
+
+<div class="section-label">Soha tanlang</div>
+<div class="cats">
+  <div class="cat sel" onclick="selCat(this,'website')">🌐 Website</div>
+  <div class="cat" onclick="selCat(this,'mobile app')">📱 Mobil ilova</div>
+  <div class="cat" onclick="selCat(this,'content/copywriting')">✍️ Kontent</div>
+  <div class="cat" onclick="selCat(this,'code/programming')">💻 Kod</div>
+  <div class="cat" onclick="selCat(this,'design/UI')">🎨 Dizayn</div>
+  <div class="cat" onclick="selCat(this,'business/marketing')">📊 Biznes</div>
+  <div class="cat" onclick="selCat(this,'AI/automation')">🤖 AI / Bot</div>
+  <div class="cat" onclick="selCat(this,'education/learning')">🎓 Ta'lim</div>
+</div>
+
+<div class="section-label">Tezkor misollar</div>
+<div class="examples">
+  <div class="ex-btn" onclick="fillEx(this)">"mahalliy tozalash xizmati uchun sayt, telefon chaqiruvlari kelsin"</div>
+  <div class="ex-btn" onclick="fillEx(this)">"telegram bot, hodimlar ish vaqtini belgilasin va hisobot chiqarsin"</div>
+  <div class="ex-btn" onclick="fillEx(this)">"ingliz tili markazi uchun onlayn ro'yxatga olish saytı"</div>
+</div>
+
+<div class="section-label">Fikringizni yozing</div>
+<div class="input-card">
+  <textarea id="userInput" placeholder="Masalan: yuk tashish kompaniyasi uchun sayt kerak, mijozlar buyurtma bersin..." oninput="updateChar()"></textarea>
+  <div class="char-hint" id="charCount">0 ta belgi</div>
+</div>
+
+<div class="actions">
+  <button class="btn-main" id="analyzeBtn" onclick="analyze()">✦ Tahlil qil va prompt yarat</button>
+  <button class="btn-sec" onclick="clearAll()">Tozalash</button>
+</div>
+
+<div class="divider"></div>
+
+<div class="questions-box" id="questionsBox">
+  <div class="q-header">
+    <div class="q-icon">🎯</div>
+    <div>
+      <div class="q-title">Bir necha savol</div>
+      <div class="q-subtitle">Javob bering — prompt yanada aniqroq bo'ladi</div>
+    </div>
+  </div>
+  <div id="questionsContent"></div>
+  <button class="btn-main" style="margin-top:8px" onclick="generateFinal()">✦ Mukammal prompt yarat</button>
+</div>
+
+<div class="result-box" id="resultBox">
+  <div class="r-header">
+    <div class="r-title"><span>✅</span> Mukammal prompt tayyor</div>
+    <div class="r-actions">
+      <button class="r-btn" onclick="copyPrompt()" id="copyBtn">📋 Nusxalash</button>
+      <button class="r-btn" onclick="clearAll()">🔄 Yangi</button>
+    </div>
+  </div>
+  <div class="prompt-out" id="promptOutput"></div>
+</div>
+
+</div><!-- /screen-main -->
+
+<!-- HISTORY SCREEN -->
+<div class="screen" id="screen-history">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+    <div>
+      <div style="font-size:18px;font-weight:600;color:var(--text)">Tarix</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:2px">Barcha yaratilgan promptlar</div>
+    </div>
+  </div>
+  <div class="hist-filters" id="histFilters"></div>
+  <div class="hist-count" id="histCount"></div>
+  <div id="histList"></div>
+</div>
+
+</div><!-- /page -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Prompt</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta" id="modalMeta"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Dastlabki fikr</div>
+      <div style="font-size:14px;color:var(--text);background:var(--purple-light);border-radius:8px;padding:10px 12px;margin-bottom:14px;border:0.5px solid var(--purple-mid)" id="modalInput"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">To'liq prompt</div>
+      <div class="modal-prompt" id="modalPrompt"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-main" onclick="copyModalPrompt()" id="modalCopyBtn">📋 Nusxalash</button>
+      <button class="btn-sec" onclick="reusePrompt()">♻️ Qayta ishlatish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedCat = 'website';
+let currentQuestions = [];
+let currentAnswers = {};
+let finalPromptText = '';
+let modalCurrentPrompt = '';
+let modalCurrentInput = '';
+let histFilterCat = 'all';
+
+const HISTORY_KEY = 'promptcraft_history';
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveHistory(arr) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+}
+function addToHistory(cat, input, prompt) {
+  const arr = getHistory();
+  arr.unshift({ id: Date.now(), cat, input, prompt, date: new Date().toISOString() });
+  if (arr.length > 100) arr.pop();
+  saveHistory(arr);
+  updateHistTab();
+
+}
+function deleteFromHistory(id) {
+  const arr = getHistory().filter(h => h.id !== id);
+  saveHistory(arr);
+  renderHistory();
+  updateHistTab();
+
+}
+function clearHistory() {
+  if (!confirm('Barcha tarixni o\'chirish?')) return;
+  saveHistory([]);
+  renderHistory();
+  updateHistTab();
+
+}
+function updateHistTab() {
+  const n = getHistory().length;
+  document.getElementById('histTab').textContent = n > 0 ? `🕓 Tarix (${n})` : '🕓 Tarix';
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 60) return 'Hozirgina';
+  if (diff < 3600) return Math.floor(diff/60) + ' daqiqa oldin';
+  if (diff < 86400) return Math.floor(diff/3600) + ' soat oldin';
+  if (diff < 604800) return Math.floor(diff/86400) + ' kun oldin';
+  return d.toLocaleDateString('uz-UZ');
+}
+
+function catEmoji(cat) {
+  const map = {'website':'🌐','mobile app':'📱','content/copywriting':'✍️','code/programming':'💻','design/UI':'🎨','business/marketing':'📊','AI/automation':'🤖','education/learning':'🎓'};
+  return (map[cat] || '✦') + ' ' + cat;
+}
+
+function renderHistory() {
+  const all = getHistory();
+  const filtered = histFilterCat === 'all' ? all : all.filter(h => h.cat === histFilterCat);
+
+  const cats = [...new Set(all.map(h => h.cat))];
+  const filtersEl = document.getElementById('histFilters');
+  let fhtml = `<div class="hf-btn ${histFilterCat==='all'?'sel':''}" onclick="setHistFilter('all')">Hammasi (${all.length})</div>`;
+  cats.forEach(c => {
+    fhtml += `<div class="hf-btn ${histFilterCat===c?'sel':''}" onclick="setHistFilter('${c}')">${catEmoji(c)} (${all.filter(h=>h.cat===c).length})</div>`;
+  });
+  if (all.length > 0) fhtml += `<button class="hist-clear" onclick="clearHistory()">🗑 Hammasini o'chir</button>`;
+  filtersEl.innerHTML = fhtml;
+
+  const countEl = document.getElementById('histCount');
+  const listEl = document.getElementById('histList');
+
+  if (all.length === 0) {
+    countEl.textContent = '';
+    listEl.innerHTML = `<div class="hist-empty"><div class="icon">📭</div><p>Hali hech qanday prompt yaratilmagan.<br>Birinchi promptingizni yarating!</p></div>`;
+    return;
+  }
+
+  countEl.textContent = filtered.length + ' ta prompt';
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div class="hist-empty"><div class="icon">🔍</div><p>Bu soha bo'yicha prompt yo'q.</p></div>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(h => {
+    const previewPrompt = h.prompt.slice(0, 200);
+    const safeInput = h.input.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const safePrompt = h.prompt.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    html += `<div class="hist-card">
+      <div class="hist-card-top">
+        <div>
+          <span class="hist-cat-badge">${catEmoji(h.cat)}</span>
+          <div class="hist-date" style="margin-top:6px">${formatDate(h.date)}</div>
+        </div>
+      </div>
+      <div class="hist-input-preview">"${h.input}"</div>
+      <div class="hist-prompt-preview">${previewPrompt}${h.prompt.length>200?'...':''}</div>
+      <div class="hist-card-actions">
+        <button class="hc-btn" onclick="openModal(${h.id})">👁 Ko'rish</button>
+        <button class="hc-btn" onclick="copyHistPrompt(${h.id})" id="hcopy_${h.id}">📋 Nusxalash</button>
+        <button class="hc-btn del" onclick="deleteFromHistory(${h.id})">🗑 O'chir</button>
+      </div>
+    </div>`;
+  });
+  listEl.innerHTML = html;
+}
+
+function setHistFilter(cat) {
+  histFilterCat = cat;
+  renderHistory();
+}
+
+function openModal(id) {
+  const h = getHistory().find(x => x.id === id);
+  if (!h) return;
+  modalCurrentPrompt = h.prompt;
+  modalCurrentInput = h.input;
+  document.getElementById('modalTitle').textContent = formatDate(h.date);
+  document.getElementById('modalMeta').innerHTML = `<span class="hist-cat-badge">${catEmoji(h.cat)}</span>`;
+  document.getElementById('modalInput').textContent = h.input;
+  document.getElementById('modalPrompt').textContent = h.prompt;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+async function copyModalPrompt() {
+  try {
+    await navigator.clipboard.writeText(modalCurrentPrompt);
+    const btn = document.getElementById('modalCopyBtn');
+    btn.textContent = '✅ Nusxalandi!';
+    setTimeout(() => btn.textContent = '📋 Nusxalash', 2000);
+  } catch(e) {}
+}
+
+async function copyHistPrompt(id) {
+  const h = getHistory().find(x => x.id === id);
+  if (!h) return;
+  try {
+    await navigator.clipboard.writeText(h.prompt);
+    const btn = document.getElementById('hcopy_' + id);
+    btn.textContent = '✅ Nusxalandi!';
+    setTimeout(() => btn.textContent = '📋 Nusxalash', 2000);
+  } catch(e) {}
+}
+
+function reusePrompt() {
+  closeModalDirect();
+  showScreen('main');
+  document.getElementById('userInput').value = modalCurrentInput;
+  updateChar();
+  document.getElementById('userInput').scrollIntoView({behavior:'smooth'});
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'history') {
+    document.querySelectorAll('.nav-tab')[1].classList.add('active');
+    renderHistory();
+  } else {
+    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+  }
+}
+
+function selCat(el, cat) {
+  document.querySelectorAll('.cat').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedCat = cat;
+}
+
+function updateChar() {
+  document.getElementById('charCount').textContent = document.getElementById('userInput').value.length + ' ta belgi';
+}
+
+function fillEx(el) {
+  document.getElementById('userInput').value = el.textContent.replace(/"/g,'').trim();
+  updateChar();
+}
+
+function clearAll() {
+  document.getElementById('userInput').value = '';
+  document.getElementById('charCount').textContent = '0 ta belgi';
+  document.getElementById('questionsBox').style.display = 'none';
+  document.getElementById('resultBox').style.display = 'none';
+  currentQuestions = [];
+  currentAnswers = {};
+  finalPromptText = '';
+}
+
+function setLoader(btn, text) {
+  btn.disabled = true;
+  btn.innerHTML = `<span class="dot-loader"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span> ${text}`;
+}
+
+async function callClaude(messages, systemPrompt) {
+  const res = await fetch('/.netlify/functions/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, system: systemPrompt, messages })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content.map(i => i.text || '').join('');
+}
+
+async function analyze() {
+  const input = document.getElementById('userInput').value.trim();
+  if (!input) { alert("Avval fikringizni yozing!"); return; }
+  const btn = document.getElementById('analyzeBtn');
+  const orig = '✦ Tahlil qil va prompt yarat';
+  setLoader(btn, 'Tahlil qilinmoqda...');
+  document.getElementById('questionsBox').style.display = 'none';
+  document.getElementById('resultBox').style.display = 'none';
+
+  const sys = `Sen expert prompt engineer san. Foydalanuvchi qisqa fikr yozadi. Sen tahlil qilib 2-4 ta aniqlashtiruvchi savol berasan.
+FAQAT JSON format, boshqa hech narsa yozma:
+{"questions":[{"id":"q1","text":"Savol o'zbek tilida","options":["v1","v2","v3","v4"],"hasCustom":true}]}
+Soha: ${selectedCat}. 2-4 ta savol ber. Amaliy va kerakli bo'lsin.`;
+
+  try {
+    const raw = await callClaude([{role:'user',content:`Soha: ${selectedCat}\nFikr: ${input}`}], sys);
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    currentQuestions = parsed.questions || [];
+    if (currentQuestions.length > 0) showQuestions();
+    else await generateFinalDirect(input);
+  } catch(e) {
+    await generateFinalDirect(input);
+  }
+  btn.disabled = false;
+  btn.innerHTML = orig;
+}
+
+function showQuestions() {
+  const content = document.getElementById('questionsContent');
+  let html = '';
+  currentQuestions.forEach((q,i) => {
+    html += `<div class="question-item"><div class="q-text">${i+1}. ${q.text}</div><div class="q-options" id="opts_${q.id}">`;
+    q.options.forEach(opt => {
+      html += `<div class="q-opt" onclick="pickOpt(this,'${q.id}','${opt.replace(/'/g,"\\'")}')">${opt}</div>`;
+    });
+    html += `</div>`;
+    if (q.hasCustom) html += `<input class="q-custom" type="text" placeholder="Yoki o'zingiz yozing..." id="custom_${q.id}" oninput="setCustom('${q.id}',this.value)">`;
+    html += `</div>`;
+  });
+  content.innerHTML = html;
+  const box = document.getElementById('questionsBox');
+  box.style.display = 'block';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function pickOpt(el, qid, val) {
+  document.querySelectorAll(`#opts_${qid} .q-opt`).forEach(o => o.classList.remove('picked'));
+  el.classList.add('picked');
+  currentAnswers[qid] = val;
+  const inp = document.getElementById(`custom_${qid}`);
+  if (inp) inp.value = '';
+}
+
+function setCustom(qid, val) {
+  if (val) {
+    document.querySelectorAll(`#opts_${qid} .q-opt`).forEach(o => o.classList.remove('picked'));
+    currentAnswers[qid] = val;
+  }
+}
+
+const PROMPT_SYS = `Sen dunyo darajasidagi prompt engineer san. Foydalanuvchi ma'lumotlaridan AI uchun eng mukammal, professional prompt yaz.
+Prompt strukturasi:
+1. ROLE — AI aniq kim ekanligini belgilagin
+2. CONTEXT — vaziyat, auditoriya, maqsad
+3. TASK — nima qilish kerak (aniq, bosqichma-bosqich)
+4. REQUIREMENTS — texnik va funktsional talablar ro'yxati
+5. OUTPUT FORMAT — chiqish shakli, uzunlik, til
+6. CONSTRAINTS — nima qilmasligi kerak
+Prompt ingliz tilida yoz. Avval o'zbek tilida:
+🎯 IZOH: [bu prompt nima uchun yaratilgani — 1 qator]
+Keyin bo'sh qator, keyin to'liq prompt ingliz tilida.`;
+
+async function generateFinal() {
+  const input = document.getElementById('userInput').value.trim();
+  const btn = document.querySelector('#questionsBox .btn-main');
+  const orig = '✦ Mukammal prompt yarat';
+  setLoader(btn, 'Yaratilmoqda...');
+  let answersText = '';
+  currentQuestions.forEach(q => { if (currentAnswers[q.id]) answersText += `- ${q.text}: ${currentAnswers[q.id]}\n`; });
+  try {
+    const result = await callClaude([{role:'user',content:`Soha: ${selectedCat}\nDastlabki fikr: ${input}\nQo'shimcha:\n${answersText||'(berilmadi)'}`}], PROMPT_SYS);
+    finalPromptText = result;
+    showResult(result);
+    addToHistory(selectedCat, input, result);
+  } catch(e) {
+    showResult('❌ Xatolik: ' + (e.message || 'Qayta urining'));
+  }
+  btn.disabled = false;
+  btn.innerHTML = orig;
+}
+
+async function generateFinalDirect(input) {
+  document.getElementById('resultBox').style.display = 'block';
+  document.getElementById('promptOutput').textContent = '⏳ Yaratilmoqda...';
+  const sys = PROMPT_SYS;
+  try {
+    const result = await callClaude([{role:'user',content:`Soha: ${selectedCat}\nFikr: ${input}`}], sys);
+    finalPromptText = result;
+    showResult(result);
+    addToHistory(selectedCat, input, result);
+  } catch(e) {
+    showResult('❌ Xatolik: ' + (e.message || 'Qayta urining'));
+  }
+}
+
+function showResult(text) {
+  const box = document.getElementById('resultBox');
+  document.getElementById('promptOutput').textContent = text;
+  box.style.display = 'block';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function copyPrompt() {
+  if (!finalPromptText) return;
+  try {
+    await navigator.clipboard.writeText(finalPromptText);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Nusxalandi!';
+    setTimeout(() => btn.textContent = '📋 Nusxalash', 2000);
+  } catch(e) {}
+}
+
+updateHistTab();
+
+</script>
+    <div style="font-size:18px;font-weight:700;color:#1a1928;margin-bottom:6px;text-align:center">API Key kiriting</div>
+    <div style="font-size:13px;color:#6B68A0;margin-bottom:20px;text-align:center;line-height:1.5">
+      <a href="https://platform.anthropic.com/settings/keys" target="_blank" style="color:#534AB7">platform.anthropic.com</a> dan oling
+    </div>
+    <input id="keyInput" type="password" placeholder="sk-ant-api03-..." 
+      style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #C8C6E8;font-size:14px;outline:none;font-family:monospace;margin-bottom:10px;color:#1a1928"
+      onkeydown="if(event.key==='Enter')saveKey()">
+    <div id="keyError" style="color:#E24B4A;font-size:12px;margin-bottom:10px;display:none">❌ Noto'g'ri key. Qayta tekshiring.</div>
+    <button onclick="saveKey()" style="width:100%;padding:12px;border-radius:10px;border:none;background:#534AB7;color:#fff;font-size:15px;font-weight:600;cursor:pointer">
+      Saqlash va boshlash
+    </button>
+    <div style="font-size:11px;color:#A09DC8;text-align:center;margin-top:12px">Key faqat sizning brauzeringizda saqlanadi</div>
+  </div>
+</div>
+
+</body>
+</html>
